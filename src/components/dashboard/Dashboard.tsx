@@ -11,14 +11,14 @@ type RowData = {
 
 export const Dashboard = () => {
   const [columnDefs] = useState<ColDef<RowData>[]>([
-    { headerName: 'Name', field: 'name' },
+    { headerName: 'Product Name', field: 'name', sortable: true, sortingOrder: ['desc', 'asc'] },
     { headerName: 'Color', field: 'color' },
   ]);
   const [rowData] = useState<RowData[]>(data.products);
 
   return (
     <div className="ag-theme-material-auto-light ag-grid-container">
-      <AgGridReact debug theme={themeQuartz} columnDefs={columnDefs} rowData={rowData} />
+      <AgGridReact debug theme={themeQuartz} columnDefs={columnDefs} rowData={rowData} multiSortKey="ctrl" />
     </div>
   );
 };
