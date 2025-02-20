@@ -1,11 +1,11 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { ModuleRegistry } from 'ag-grid-community';
+import { DateFilterModule, ModuleRegistry, NumberFilterModule, TextFilterModule } from 'ag-grid-community';
 import { ClientSideRowModelModule } from 'ag-grid-community';
 import { App } from './components/app';
 import './index.css';
 
-ModuleRegistry.registerModules([ClientSideRowModelModule]);
+ModuleRegistry.registerModules([ClientSideRowModelModule, TextFilterModule, NumberFilterModule, DateFilterModule]);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
