@@ -4,8 +4,8 @@
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(71, 66, 66, 0.87);
-  background-color: #FEF8DD;
+  color: rgba(9, 96, 217, 0.87);
+  background-color: #ececec;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -19,8 +19,4 @@ body {
   justify-content: center;
   min-width: 320px;
   min-height: 100vh;
-}
-
-h1 {
-  font-size: 24px;
 }
