@@ -1,0 +1,225 @@
+import React from 'react';
+import {
+  Box,
+  Button,
+  FormControl,
+  FormControlLabel,
+  FormHelperText,
+  Grid,
+  InputLabel,
+  MenuItem,
+  Radio,
+  RadioGroup,
+  Select,
+  TextField,
+  Typography
+} from '@mui/material';
+import { useForm, Controller, useFieldArray } from 'react-hook-form';
+
+type Condition = {
+  conditionType: string;
+  operator: string;
+  value: string;
+};
+
+type FormData = {
+  profileName: string;
+  rowsToProfile: number;
+  mode: 'custom' | 'advanced';
+  customText?: string;
+  conditions: Condition[];
+};
+
+const operatorOptions = ['Equals', 'Contains', 'Starts With'];
+const conditionTypeOptions = ['Field A', 'Field B', 'Field C'];
+
+export const ProfileForm = () => {
+  const {
+    control,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<FormData>({
+    defaultValues: {
+      profileName: '',
+      rowsToProfile: 10,
+      mode: 'custom',
+      customText: '',
+      conditions: [{ conditionType: '', operator: '', value: '' }],
+    },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'conditions',
+  });
+
+  const watchMode = watch('mode');
+
+  const onSubmit = (data: FormData) => {
+    console.log('Form submitted:', data);
+  };
+
+  return (
+    <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ maxWidth: 800, mx: 'auto', p: 4 }}>
+      <Typography variant="h5" mb={2}>Create Profile</Typography>
+
+      <Controller
+        name="profileName"
+        control={control}
+        rules={{ required: 'Profile Name is required' }}
+        render={({ field }) => (
+          <TextField
+            {...field}
+            label="Profile Name"
+            fullWidth
+            margin="normal"
+            error={!!errors.profileName}
+            helperText={errors.profileName?.message}
+          />
+        )}
+      />
+
+      <Controller
+        name="rowsToProfile"
+        control={control}
+        rules={{
+          required: 'Number of rows is required',
+          min: { value: 1, message: 'Minimum is 1' },
+        }}
+        render={({ field }) => (
+          <TextField
+            {...field}
+            label="# Rows to Profile"
+            type="number"
+            fullWidth
+            margin="normal"
+            error={!!errors.rowsToProfile}
+            helperText={errors.rowsToProfile?.message}
+          />
+        )}
+      />
+
+      <FormControl component="fieldset" margin="normal">
+        <Typography variant="subtitle1" gutterBottom>Select Mode</Typography>
+        <Controller
+          name="mode"
+          control={control}
+          render={({ field }) => (
+            <RadioGroup row {...field}>
+              <FormControlLabel value="custom" control={<Radio />} label="Custom" />
+              <FormControlLabel value="advanced" control={<Radio />} label="Advanced" />
+            </RadioGroup>
+          )}
+        />
+      </FormControl>
+
+      {watchMode === 'custom' && (
+        <Controller
+          name="customText"
+          control={control}
+          rules={{ required: 'Custom text is required' }}
+          render={({ field }) => (
+            <TextField
+              {...field}
+              label="Custom Text"
+              multiline
+              rows={4}
+              fullWidth
+              margin="normal"
+              error={!!errors.customText}
+              helperText={errors.customText?.message}
+            />
+          )}
+        />
+      )}
+
+      {watchMode === 'advanced' && (
+        <Box mt={3}>
+          <Typography variant="h6" mb={1}>Advanced Conditions</Typography>
+          {fields.map((item, index) => (
+            <Grid container spacing={2} key={item.id} alignItems="center" mb={1}>
+              <Grid item xs={4}>
+                <Controller
+                  name={`conditions.${index}.conditionType`}
+                  control={control}
+                  rules={{ required: 'Condition type required' }}
+                  render={({ field }) => (
+                    <FormControl fullWidth error={!!errors.conditions?.[index]?.conditionType}>
+                      <InputLabel>Condition Type</InputLabel>
+                      <Select {...field} label="Condition Type">
+                        {conditionTypeOptions.map((option) => (
+                          <MenuItem key={option} value={option}>{option}</MenuItem>
+                        ))}
+                      </Select>
+                      <FormHelperText>{errors.conditions?.[index]?.conditionType?.message}</FormHelperText>
+                    </FormControl>
+                  )}
+                />
+              </Grid>
+
+              <Grid item xs={3}>
+                <Controller
+                  name={`conditions.${index}.operator`}
+                  control={control}
+                  rules={{ required: 'Operator required' }}
+                  render={({ field }) => (
+                    <FormControl fullWidth error={!!errors.conditions?.[index]?.operator}>
+                      <InputLabel>Operator</InputLabel>
+                      <Select {...field} label="Operator">
+                        {operatorOptions.map((option) => (
+                          <MenuItem key={option} value={option}>{option}</MenuItem>
+                        ))}
+                      </Select>
+                      <FormHelperText>{errors.conditions?.[index]?.operator?.message}</FormHelperText>
+                    </FormControl>
+                  )}
+                />
+              </Grid>
+
+              <Grid item xs={3}>
+                <Controller
+                  name={`conditions.${index}.value`}
+                  control={control}
+                  rules={{ required: 'Value required' }}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Value"
+                      fullWidth
+                      error={!!errors.conditions?.[index]?.value}
+                      helperText={errors.conditions?.[index]?.value?.message}
+                    />
+                  )}
+                />
+              </Grid>
+
+              <Grid item xs={2}>
+                <Button
+                  color="error"
+                  onClick={() => remove(index)}
+                  disabled={fields.length === 1}
+                >
+                  Remove
+                </Button>
+              </Grid>
+            </Grid>
+          ))}
+
+          <Button
+            variant="outlined"
+            onClick={() => append({ conditionType: '', operator: '', value: '' })}
+          >
+            Add Condition
+          </Button>
+        </Box>
+      )}
+
+      <Box mt={4}>
+        <Button variant="contained" type="submit">Submit</Button>
+      </Box>
+    </Box>
+  );
+};
+
+export default ProfileForm;
