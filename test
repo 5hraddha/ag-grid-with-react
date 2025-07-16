@@ -1,225 +1,95 @@
-import React from 'react';
-import {
-  Box,
-  Button,
-  FormControl,
-  FormControlLabel,
-  FormHelperText,
-  Grid,
-  InputLabel,
-  MenuItem,
-  Radio,
-  RadioGroup,
-  Select,
-  TextField,
-  Typography
-} from '@mui/material';
-import { useForm, Controller, useFieldArray } from 'react-hook-form';
+import { ResponsiveBar } from '@nivo/bar';
 
-type Condition = {
-  conditionType: string;
-  operator: string;
-  value: string;
+type ChartDatum = {
+  label: string;
+  value: number;
 };
 
-type FormData = {
-  profileName: string;
-  rowsToProfile: number;
-  mode: 'custom' | 'advanced';
-  customText?: string;
-  conditions: Condition[];
-};
+const data: ChartDatum[] = [
+  { label: 'Apples', value: 50 },
+  { label: 'Bananas', value: 75 },
+  { label: 'Cherries', value: 30 },
+  { label: 'Dates', value: 90 },
+];
 
-const operatorOptions = ['Equals', 'Contains', 'Starts With'];
-const conditionTypeOptions = ['Field A', 'Field B', 'Field C'];
-
-export const ProfileForm = () => {
-  const {
-    control,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm<FormData>({
-    defaultValues: {
-      profileName: '',
-      rowsToProfile: 10,
-      mode: 'custom',
-      customText: '',
-      conditions: [{ conditionType: '', operator: '', value: '' }],
-    },
-  });
-
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: 'conditions',
-  });
-
-  const watchMode = watch('mode');
-
-  const onSubmit = (data: FormData) => {
-    console.log('Form submitted:', data);
-  };
+const BarChart = () => {
+  const colors = ['#f44336', '#ffeb3b', '#e91e63', '#795548'];
 
   return (
-    <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ maxWidth: 800, mx: 'auto', p: 4 }}>
-      <Typography variant="h5" mb={2}>Create Profile</Typography>
-
-      <Controller
-        name="profileName"
-        control={control}
-        rules={{ required: 'Profile Name is required' }}
-        render={({ field }) => (
-          <TextField
-            {...field}
-            label="Profile Name"
-            fullWidth
-            margin="normal"
-            error={!!errors.profileName}
-            helperText={errors.profileName?.message}
-          />
-        )}
+    <div style={{ height: data.length * 60 + 40, width: 500 }}>
+      <ResponsiveBar
+        data={data}
+        keys={['value']}
+        indexBy="label"
+        layout="horizontal"
+        margin={{ top: 20, right: 20, bottom: 20, left: 100 }}
+        padding={0.2} // ~10% of space between bars, adjust as needed
+        colors={(bar) => colors[bar.index]}
+        axisTop={null}
+        axisRight={null}
+        axisBottom={null}
+        // axisBottom={{ legend: 'Quantity', legendPosition: 'middle', legendOffset: 32 }}
+        axisLeft={{ tickSize: 5, tickPadding: 5, tickRotation: 0 }}
+        enableLabel={true}
+        labelSkipWidth={12}
+        labelSkipHeight={12}
+        labelTextColor="#000"
+        role="application"
+        ariaLabel="Horizontal bar chart showing values"
+        animate={true}
       />
-
-      <Controller
-        name="rowsToProfile"
-        control={control}
-        rules={{
-          required: 'Number of rows is required',
-          min: { value: 1, message: 'Minimum is 1' },
-        }}
-        render={({ field }) => (
-          <TextField
-            {...field}
-            label="# Rows to Profile"
-            type="number"
-            fullWidth
-            margin="normal"
-            error={!!errors.rowsToProfile}
-            helperText={errors.rowsToProfile?.message}
-          />
-        )}
-      />
-
-      <FormControl component="fieldset" margin="normal">
-        <Typography variant="subtitle1" gutterBottom>Select Mode</Typography>
-        <Controller
-          name="mode"
-          control={control}
-          render={({ field }) => (
-            <RadioGroup row {...field}>
-              <FormControlLabel value="custom" control={<Radio />} label="Custom" />
-              <FormControlLabel value="advanced" control={<Radio />} label="Advanced" />
-            </RadioGroup>
-          )}
-        />
-      </FormControl>
-
-      {watchMode === 'custom' && (
-        <Controller
-          name="customText"
-          control={control}
-          rules={{ required: 'Custom text is required' }}
-          render={({ field }) => (
-            <TextField
-              {...field}
-              label="Custom Text"
-              multiline
-              rows={4}
-              fullWidth
-              margin="normal"
-              error={!!errors.customText}
-              helperText={errors.customText?.message}
-            />
-          )}
-        />
-      )}
-
-      {watchMode === 'advanced' && (
-        <Box mt={3}>
-          <Typography variant="h6" mb={1}>Advanced Conditions</Typography>
-          {fields.map((item, index) => (
-            <Grid container spacing={2} key={item.id} alignItems="center" mb={1}>
-              <Grid item xs={4}>
-                <Controller
-                  name={`conditions.${index}.conditionType`}
-                  control={control}
-                  rules={{ required: 'Condition type required' }}
-                  render={({ field }) => (
-                    <FormControl fullWidth error={!!errors.conditions?.[index]?.conditionType}>
-                      <InputLabel>Condition Type</InputLabel>
-                      <Select {...field} label="Condition Type">
-                        {conditionTypeOptions.map((option) => (
-                          <MenuItem key={option} value={option}>{option}</MenuItem>
-                        ))}
-                      </Select>
-                      <FormHelperText>{errors.conditions?.[index]?.conditionType?.message}</FormHelperText>
-                    </FormControl>
-                  )}
-                />
-              </Grid>
-
-              <Grid item xs={3}>
-                <Controller
-                  name={`conditions.${index}.operator`}
-                  control={control}
-                  rules={{ required: 'Operator required' }}
-                  render={({ field }) => (
-                    <FormControl fullWidth error={!!errors.conditions?.[index]?.operator}>
-                      <InputLabel>Operator</InputLabel>
-                      <Select {...field} label="Operator">
-                        {operatorOptions.map((option) => (
-                          <MenuItem key={option} value={option}>{option}</MenuItem>
-                        ))}
-                      </Select>
-                      <FormHelperText>{errors.conditions?.[index]?.operator?.message}</FormHelperText>
-                    </FormControl>
-                  )}
-                />
-              </Grid>
-
-              <Grid item xs={3}>
-                <Controller
-                  name={`conditions.${index}.value`}
-                  control={control}
-                  rules={{ required: 'Value required' }}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      label="Value"
-                      fullWidth
-                      error={!!errors.conditions?.[index]?.value}
-                      helperText={errors.conditions?.[index]?.value?.message}
-                    />
-                  )}
-                />
-              </Grid>
-
-              <Grid item xs={2}>
-                <Button
-                  color="error"
-                  onClick={() => remove(index)}
-                  disabled={fields.length === 1}
-                >
-                  Remove
-                </Button>
-              </Grid>
-            </Grid>
-          ))}
-
-          <Button
-            variant="outlined"
-            onClick={() => append({ conditionType: '', operator: '', value: '' })}
-          >
-            Add Condition
-          </Button>
-        </Box>
-      )}
-
-      <Box mt={4}>
-        <Button variant="contained" type="submit">Submit</Button>
-      </Box>
-    </Box>
+    </div>
   );
 };
 
-export default ProfileForm;
+export default BarChart;
+
+
+
+
+import React from 'react';
+import { ResponsivePie, PieDatum } from '@nivo/pie';
+
+const data: PieDatum[] = [
+  { id: 'Apples', label: 'Apples', value: 50, color: '#f44336' },
+  { id: 'Bananas', label: 'Bananas', value: 75, color: '#ffeb3b' },
+  { id: 'Cherries', label: 'Cherries', value: 30, color: '#e91e63' },
+  { id: 'Dates', label: 'Dates', value: 90, color: '#795548' },
+];
+
+const DoughnutChart: React.FC = () => {
+  return (
+    <div style={{ height: 400, width: 600 }}>
+      <ResponsivePie
+        data={data}
+        innerRadius={0.5} // Creates the "doughnut" effect
+        padAngle={1}
+        cornerRadius={3}
+        colors={(d) => d.data.color}
+        margin={{ top: 20, right: 20, bottom: 80, left: 100 }}
+        enableArcLinkLabels={false}
+        enableArcLabels={true}
+        arcLabelsTextColor="#333"
+        legends={[
+          {
+            anchor: 'bottom-left',
+            direction: 'column',
+            justify: false,
+            translateX: -80,
+            translateY: 60,
+            itemWidth: 80,
+            itemHeight: 20,
+            itemsSpacing: 4,
+            symbolSize: 12,
+            symbolShape: 'circle',
+            itemTextColor: '#333',
+          },
+        ]}
+        role="application"
+        ariaLabel="Doughnut chart showing fruit distribution"
+      />
+    </div>
+  );
+};
+
+export default DoughnutChart;
